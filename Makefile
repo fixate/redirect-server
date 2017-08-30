@@ -1,6 +1,6 @@
 .PHONY: all deps fmt vet test builddev
 
-EXECUTABLE ?= drone-secrets
+EXECUTABLE ?= redirect-server
 IMAGE ?= fixate/$(EXECUTABLE):latest
 COMMIT ?= $(shell git rev-parse --short HEAD)
 
@@ -20,6 +20,9 @@ vet:
 
 test:
 	@for PKG in $(PACKAGES); do go test -cover -coverprofile $$GOPATH/src/$$PKG/coverage.out $$PKG || exit 1; done;
+
+docker: $(EXECUTABLE)
+	docker build -t $(IMAGE) .
 
 $(EXECUTABLE): $(wildcard *.go)
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags '-s -w $(LDFLAGS)'
