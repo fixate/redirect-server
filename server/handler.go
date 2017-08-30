@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -35,8 +36,11 @@ func (inst *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	if inst.Manifest.Options.EnforceHttps && !isHttps(r) {
-		r.URL.Scheme = "https"
-		inst.handleRedirect(w, r, r.URL.String())
+		var urlCopy url.URL
+		urlCopy = *r.URL
+		urlCopy.Scheme = "https"
+		urlCopy.Host = r.Host
+		inst.handleRedirect(w, r, urlCopy.String())
 		return
 	}
 
