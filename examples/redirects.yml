@@ -1,0 +1,11 @@
+---
+options:
+  enforcehttps: true
+
+redirects:
+  - host: myoldsite.com
+    target: https://mynewsite.com/
+
+  - host: localhost:3000
+    path: '*/blah'
+    target: http://fixate.it/$1
