@@ -1,6 +1,4 @@
-# Drone Secrets
-
-Will set drone secrets to what is in a yaml file
+# Redirect Serber
 
 ### Install:
 
@@ -15,46 +13,27 @@ TODO:
 ### Usage:
 
 ```shell
-drone-secrets apply -f manifest.yml
+redirect-server --manifest manifest.yml
 ```
 
 *manifest.yml*
 
 ```yaml
 ---
-# Comma delimited or list accepted syntax accepted for repo, value, events and images
-- repo: my/repo, my/other-repo
-  secrets:
-	# Set for my/repo and my/other-repo
-  - name: MY_SECRET
-    value: 12345
+options:
+	# Will redirect all http request to HTTPS
+  enforcehttps: true
 
-  - name: SLACK_WEBHOOK
-    value: abcde
-		# Default events are push, tag, deployment
-    events: push,tag
-    images: 
-      - plugins/slack
-      - plugins/slack:*
+redirects:
+  - host: myoldsite.com
+    target: https://mynewsite.com/
 
-- repo: my/repo
-  # Setting value to a list
-  # List types are converted to a comma delimited string
-  - name: PLUGINS_ENVIRONMENT_VARIABLES
-    events: 
-      - push
-      - tag
-    value:
-      - PORT=1234
-      - SECRET_TOKEN=abcd1234
-    # Same as:
-    # value: PORT=1234,SECRET_TOKEN=abcde1234,...
-    images: 
-      - plugins/ecs
-      - plugins/ecs:*
+  - host: localhost:3000
+    path: '*/blah'
+    target: http://fixate.it/$1
+
 ```
 
 ## TODO:
 
 - Tests 
-- Optionally clean secrets not in manifest

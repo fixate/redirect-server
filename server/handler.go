@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -24,6 +23,10 @@ func newHandler(manifest *mfst.Manifest) *handler {
 	return &handler{Manifest: manifest}
 }
 
+func isHttps(r *http.Request) bool {
+	return strings.HasPrefix(r.Proto, "HTTPS") || r.Header.Get("X-Forwarded-Proto") == "https"
+}
+
 func (inst *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	inst.RLock()
 	defer inst.RUnlock()
@@ -31,12 +34,9 @@ func (inst *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	io.Copy(ioutil.Discard, r.Body)
 	defer r.Body.Close()
 
-	fmt.Println(inst.Manifest.Options.EnforceHttps, !strings.HasPrefix(r.Proto, "HTTPS"))
-	if inst.Manifest.Options.EnforceHttps && !strings.HasPrefix(r.Proto, "HTTPS") {
-		var urlCopy url.URL
-		urlCopy = *r.URL
-		urlCopy.Scheme = "https"
-		inst.handleRedirect(w, r, urlCopy.String())
+	if inst.Manifest.Options.EnforceHttps && !isHttps(r) {
+		r.URL.Scheme = "https"
+		inst.handleRedirect(w, r, r.URL.String())
 		return
 	}
 
