@@ -13,7 +13,8 @@ type Redirect struct {
 }
 
 type ManifestOptions struct {
-	EnforceHttps bool `yaml:enforcehttps`
+	EnforceHttps bool   `yaml:enforcehttps`
+	HealthCheck  string `yaml:healthCheck`
 }
 
 type Manifest struct {

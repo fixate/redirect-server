@@ -1,6 +1,7 @@
 ---
 options:
   enforcehttps: true
+  healthcheck: /healthz
 
 redirects:
   - host: myoldsite.com

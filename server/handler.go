@@ -28,12 +28,23 @@ func isHttps(r *http.Request) bool {
 	return strings.HasPrefix(r.Proto, "HTTPS") || r.Header.Get("X-Forwarded-Proto") == "https"
 }
 
+func pathMatchesHealthCheck(r *http.Request, path string) bool {
+	return len(path) > 0 && normalizePath(r.URL.Path) == normalizePath(path)
+}
+
 func (inst *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	inst.RLock()
 	defer inst.RUnlock()
 
 	io.Copy(ioutil.Discard, r.Body)
 	defer r.Body.Close()
+
+	healthCheckPath := inst.Manifest.Options.HealthCheck
+	if pathMatchesHealthCheck(r, healthCheckPath) {
+		w.WriteHeader(http.StatusOK)
+		w.Header().Add("Content-Length", "0")
+		return
+	}
 
 	if inst.Manifest.Options.EnforceHttps && !isHttps(r) {
 		var urlCopy url.URL
