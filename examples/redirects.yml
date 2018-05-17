@@ -1,12 +1,16 @@
 ---
 options:
-  enforcehttps: true
+  enforcehttps: false
   healthcheck: /healthz
 
 redirects:
   - host: myoldsite.com
     target: https://mynewsite.com/
 
+  # - host: localhost:3000
+  #  path: '*/blah'
+  #  target: http://fixate.it/$1
+
   - host: localhost:3000
-    path: '*/blah'
-    target: http://fixate.it/$1
+    pathmatch: '(?P<code>[^?]+).*$'
+    target: http://fixate.it/${code}

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -55,25 +54,17 @@ func (inst *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, redirect, found, err := inst.findRedirect(r)
+	url, _, found, err := inst.findRedirect(r)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	if found {
-		fmt.Printf(
-			"Redirect '%s/%s' found for '%s/%s'. Redirect to %s.",
-			redirect.Host,
-			redirect.Path,
-			r.Host,
-			normalizePath(r.URL.Path),
-			url,
-		)
 		inst.handleRedirect(w, r, url)
 		return
 	}
 
-	fmt.Println("Redirect not found.")
+	log.Println("Redirect not found.")
 
 	w.WriteHeader(http.StatusNotFound)
 }
@@ -107,7 +98,7 @@ func (inst *handler) findRedirect(r *http.Request) (url string, result *mfst.Red
 	err = nil
 	host := r.Host
 	path := normalizePath(r.URL.Path)
-	fmt.Printf("Checking redirect for %s/%s\n", host, path)
+	log.Printf("Checking redirect for %s/%s\n", host, path)
 
 	for _, redirect := range inst.Manifest.Redirects {
 		// If host or path is blank they pass
@@ -134,8 +125,21 @@ func (inst *handler) findRedirect(r *http.Request) (url string, result *mfst.Red
 				isPathMatch = false
 			} else {
 				isPathMatch = true
-				fmt.Println(redirect)
 				url = substitute(redirect.Target, pathMatches)
+			}
+		}
+
+		if len(redirect.PathMatch) > 0 {
+			isPathMatch = false
+			re, rerr := regexp.Compile(redirect.PathMatch)
+			if rerr != nil {
+				log.Println(rerr)
+				err = rerr
+				return
+			}
+			if re.MatchString(path) {
+				isPathMatch = true
+				url = re.ReplaceAllString(path, redirect.Target)
 			}
 		}
 
@@ -151,6 +155,13 @@ func (inst *handler) findRedirect(r *http.Request) (url string, result *mfst.Red
 }
 
 func (inst *handler) handleRedirect(w http.ResponseWriter, r *http.Request, url string) {
+	log.Printf(
+		"Redirect '%s/%s' -> '%s'",
+		r.Host,
+		normalizePath(r.URL.Path),
+		url,
+	)
+
 	if r.Method == "HEAD" {
 		r.Close = true
 		w.Header().Add("Location", url)

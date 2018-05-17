@@ -7,14 +7,15 @@ import (
 )
 
 type Redirect struct {
-	Host   string `yaml:host`
-	Path   string `yaml:path`
-	Target string `yaml:target`
+	Host      string `yaml:host`
+	Path      string `yaml:path`
+	PathMatch string `yaml:pathmatch`
+	Target    string `yaml:target`
 }
 
 type ManifestOptions struct {
 	EnforceHttps bool   `yaml:enforcehttps`
-	HealthCheck  string `yaml:healthCheck`
+	HealthCheck  string `yaml:healthcheck`
 }
 
 type Manifest struct {
