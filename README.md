@@ -1,4 +1,4 @@
-# Redirect Serber
+# Redirect Server
 
 ### Install:
 
